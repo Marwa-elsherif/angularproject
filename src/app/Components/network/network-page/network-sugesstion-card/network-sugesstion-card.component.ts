@@ -1,8 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  Inject,
+  OnInit,
+  ViewChild,
+  ViewChildren,
+} from '@angular/core';
 //import { userInfo } from 'node:os';
 import { NetworkService } from '../../Services/network.service';
 import { Observable } from 'rxjs';
 import { PaginationService } from 'src/app/MainServices/pagination.service';
+import { ScrollableDirective } from 'src/app/MainDirectives/scrollable.directive';
+import { DOCUMENT } from '@angular/common';
 @Component({
   selector: 'app-network-sugesstion-card',
   templateUrl: './network-sugesstion-card.component.html',
@@ -10,13 +19,21 @@ import { PaginationService } from 'src/app/MainServices/pagination.service';
 })
 export class NetworkSugesstionCardComponent implements OnInit {
   usersinCardData: any[];
-  constructor(private usrs: NetworkService,
-    private page:PaginationService
-    ) {}
+  @ViewChildren(ScrollableDirective) dirs;
+  @ViewChild('card') input;
+  constructor(
+    private usrs: NetworkService,
+    private page: PaginationService,
+    @Inject(DOCUMENT) private document: Document
+  ) {}
 
   ngOnInit(): void {
-    this.page.init('users-details', 'jobTitle', {limit:1, reverse: true, prepend: false })
-    console.log(this.page.data)
+    this.page.init('users-details', 'jobTitle', {
+      limit: 2,
+      reverse: true,
+      prepend: false,
+    });
+    console.log(this.page.data);
     let friendData: any[];
     let Requests: any[];
     let SentfriendRequest: any[];
@@ -57,12 +74,21 @@ export class NetworkSugesstionCardComponent implements OnInit {
       });
     });
   }
- scrollHandler(e) {
-    console.log(e)
-    if (e === 'bottom') {
-      this.page.more()
-    }
+  @HostListener('window:scroll', []) onScrolll() {
+    try {
+      // let e = this.dirs.first.onScrolll(this.document.documentElement);
+      let e = this.dirs.first.onScroll(
+        this.document.documentElement,
+        this.input.nativeElement
+      );
+
+      console.log(e);
+      if (e === 'bottom') {
+        this.page.more();
+      }
+    } catch (err) {}
   }
+
   sendRequest(id) {
     this.usrs.create_NewRequest(id, {
       id: localStorage.getItem('uid'),
@@ -73,6 +99,4 @@ export class NetworkSugesstionCardComponent implements OnInit {
       jobTitle: localStorage.getItem('jobTitle'),
     });
   }
-
- 
 }
