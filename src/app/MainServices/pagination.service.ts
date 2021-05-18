@@ -32,20 +32,44 @@ export class PaginationService {
 
   // Initial query sets options and defines the Observable
   // passing opts will override the defaults
-  init(path: string, field: string, opts?: any) {
+  init(
+    path: string,
+    field: string,
+    opts?: any,
+    conditionField1?: any,
+    conditionField2?: any,
+    operator?: any
+  ) {
     this.query = {
       path,
       field,
-      limit: 2,
+      conditionField1,
+      conditionField2,
+      operator,
+      limit: 1,
       reverse: false,
       prepend: false,
       ...opts,
     };
 
     const first = this.afs.collection(this.query.path, (ref) => {
-      return ref
-        .orderBy(this.query.field, this.query.reverse ? 'desc' : 'asc')
-        .limit(this.query.limit);
+      if (
+        this.query.conditionField1 != undefined &&
+        this.query.operator != undefined &&
+        this.query.conditionField2 != undefined
+      )
+        return ref
+          .where(
+            this.query.conditionField1,
+            this.query.operator,
+            this.query.conditionField2
+          )
+          .orderBy(this.query.field, this.query.reverse ? 'desc' : 'asc')
+          .limit(this.query.limit);
+      else
+        return ref
+          .orderBy(this.query.field, this.query.reverse ? 'desc' : 'asc')
+          .limit(this.query.limit);
     });
 
     this.mapAndUpdate(first);
@@ -63,10 +87,25 @@ export class PaginationService {
     const cursor = this.getCursor();
 
     const more = this.afs.collection(this.query.path, (ref) => {
-      return ref
-        .orderBy(this.query.field, this.query.reverse ? 'desc' : 'asc')
-        .limit(this.query.limit)
-        .startAfter(cursor);
+      if (
+        this.query.conditionField1 != undefined &&
+        this.query.operator != undefined &&
+        this.query.conditionField2 != undefined
+      )
+        return ref
+          .where(
+            this.query.conditionField1,
+            this.query.operator,
+            this.query.conditionField2
+          )
+          .orderBy(this.query.field, this.query.reverse ? 'desc' : 'asc')
+          .limit(this.query.limit)
+          .startAfter(cursor);
+      else
+        return ref
+          .orderBy(this.query.field, this.query.reverse ? 'desc' : 'asc')
+          .limit(this.query.limit)
+          .startAfter(cursor);
     });
     this.mapAndUpdate(more);
   }
@@ -96,10 +135,15 @@ export class PaginationService {
       .snapshotChanges()
       .pipe(
         tap((arr) => {
+          console.log(arr);
+
           let values = arr.map((snap) => {
             const data = snap.payload.doc.data();
             const doc = snap.payload.doc;
-            return { ...data, doc };
+            const id = snap.payload.doc.id;
+            console.log({ ...data, doc, id });
+
+            return { ...data, doc, id };
           });
 
           // If prepending, reverse the batch order
