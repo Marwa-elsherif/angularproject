@@ -77,10 +77,7 @@ export class NetworkSugesstionCardComponent implements OnInit {
   @HostListener('window:scroll', []) onScrolll() {
     try {
       // let e = this.dirs.first.onScrolll(this.document.documentElement);
-      let e = this.dirs.first.onScroll(
-        this.document.documentElement,
-        this.input.nativeElement
-      );
+      let e = this.dirs.first.onScroll(this.document, this.input.nativeElement);
 
       console.log(e);
       if (e === 'bottom') {

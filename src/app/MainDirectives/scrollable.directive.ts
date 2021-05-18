@@ -13,18 +13,25 @@ export class ScrollableDirective {
   @Output() scrollPosition = new EventEmitter();
 
   constructor(public el: ElementRef) {}
-  onScroll($eventw, event) {
+  onScroll(document, event) {
     try {
-      const top = $eventw.scrollTop;
-      const height = event.scrollHeight;
-      const offset = event.offsetHeight;
-      console.log('t', top);
-      console.log('h', height);
-      console.log('o', offset);
-      console.log(window.pageYOffset);
+      const top = document.documentElement.scrollTop;
+      // const height = event.scrollHeight;
+      // const offset = event.offsetHeight;
+      // console.log('t', top);
+      // console.log('h', height);
+      // console.log('o', offset);
+      // console.log(window.pageYOffset);
 
       // emit bottom event
-      if (top > offset / 6) {
+      let pos =
+        (document.documentElement.scrollTop || document.body.scrollTop) +
+        document.documentElement.offsetHeight;
+      if (
+        document.documentElement.offsetHeight +
+          document.documentElement.scrollTop >=
+        document.documentElement.scrollHeight
+      ) {
         return 'bottom';
       }
 

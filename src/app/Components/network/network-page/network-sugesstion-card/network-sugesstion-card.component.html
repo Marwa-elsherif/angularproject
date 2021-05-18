@@ -6,7 +6,7 @@
     <div class="W-100%"><br></div>
     <div *ngIf="usersinCardData !=undefined" class="row">
       <p *ngIf="page.done | async">I ran out of boats!</p>
-      <div *ngFor="let item of page.data | async" class="col-md-12 " style="align-items: center;padding: 8px;">
+      <div *ngFor="let item of page.data | async" class="col-md-6" style="align-items: center;padding: 8px;">
         <div class="card mb-3 " style="display: flex; flex-direction: column;">
           <div
             style="background: url({{item.avatarCover}}) no-repeat; background-size: cover; height: 70px;width: 100%;border-radius: .6em .6em 0 0 ;">
