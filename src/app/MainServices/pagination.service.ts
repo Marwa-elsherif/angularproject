@@ -5,9 +5,6 @@ import {
 } from '@angular/fire/firestore';
 import { BehaviorSubject } from 'rxjs';
 import { Observable } from 'rxjs';
-// import  'rxjs/add/operator/do';
-// import 'rxjs/add/operator/scan';
-// import 'rxjs/add/operator/take';
 import { scan, take, tap } from 'rxjs/operators';
 
 import { QueryConfig } from '../ViewModel/query-config';
@@ -46,7 +43,7 @@ export class PaginationService {
       conditionField1,
       conditionField2,
       operator,
-      limit: 1,
+      limit: 2,
       reverse: false,
       prepend: false,
       ...opts,

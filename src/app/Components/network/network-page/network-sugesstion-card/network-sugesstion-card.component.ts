@@ -13,86 +13,113 @@ import { PaginationService } from 'src/app/MainServices/pagination.service';
 import { ScrollableDirective } from 'src/app/MainDirectives/scrollable.directive';
 import { DOCUMENT } from '@angular/common';
 import { isLabeledStatement } from 'typescript';
+import { UserService } from 'src/app/MainServices/User.service';
 @Component({
   selector: 'app-network-sugesstion-card',
   templateUrl: './network-sugesstion-card.component.html',
   styleUrls: ['./network-sugesstion-card.component.scss'],
 })
 export class NetworkSugesstionCardComponent implements OnInit {
-  usersinCardData: any[];
+  usersinCardData: any[] = [];
   @ViewChildren(ScrollableDirective) dirs;
   @ViewChild('card') input;
+  friendData: any[];
+  Requests: any[];
+  SentfriendRequest: any[] = [];
+  uid;
   constructor(
     private usrs: NetworkService,
     private page: PaginationService,
+    private us: UserService,
     @Inject(DOCUMENT) private document: Document
   ) {}
 
   ngOnInit(): void {
-    let friendData: any[];
-    let Requests: any[];
-    let SentfriendRequest: any[];
-
-    let uid = localStorage.getItem('uid');
-    this.usrs.getAllFriendRequests(uid).subscribe((data) => {
-      Requests = data.map((e) => {
+    this.uid = localStorage.getItem('uid');
+    this.usrs.getAllFriendRequests(this.uid).subscribe((data) => {
+      this.Requests = data.map((e) => {
         return e.payload.doc.id;
       });
 
-      this.usrs.getAllFriendsList(uid).subscribe((data) => {
-        friendData = data.map((e) => {
+      this.usrs.getAllFriendsList(this.uid).subscribe((data) => {
+        this.friendData = data.map((e) => {
           return e.payload.doc.id;
         });
 
-        this.usrs.getMySentfriendRequests(uid).subscribe((data) => {
-          SentfriendRequest = data.map((e) => {
+        this.usrs.getMySentfriendRequests(this.uid).subscribe((data) => {
+          this.SentfriendRequest = data.map((e) => {
             return e.payload.doc.id;
           });
 
-          this.page.init(
-            'users-details',
-            '__name__',
-            {
-              limit: 1,
-              reverse: false,
-              prepend: true,
-            },
-            '__name__',
-            Requests.concat(friendData, SentfriendRequest, uid),
-            'not-in'
-          );
+          // this.page.init(
+          //   'users-details',
+          //   '__name__',
+          //   {
+          //     limit: 2,
+          //     reverse: false,
+          //     prepend: true,
+          //   },
+          //   '__name__',
+          //   Requests.concat(friendData, SentfriendRequest, uid),
+          //   'not-in'
+          // );
 
-          this.page.data.subscribe((res) => {
-            this.usersinCardData = res.map((e) => {
-              // console.log();
+          // this.page.data.subscribe((res) => {
+          //   console.log(res);
 
-              return {
-                id: e.id,
-                firstName: e.firstName,
-                lastName: e.lastName,
-                jobTitle: e.jobTitle,
-                avatar: e.avatar,
-                avatarCover: e.avatarCover,
-              };
-            });
-          });
+          //   this.usersinCardData = res.map((e) => {
+          //     // console.log();
 
-          // this.usrs
-          //   .notINCard(, uid)
-          //   .subscribe((data) => {
-          //     this.usersinCardData = data.map((e) => {
-          //       return {
-          //         id: e.payload.doc.id,
-          //         firstName:
-          //           e.payload.doc.data()['firstName'] +
-          //           ' ' +
-          //           e.payload.doc.data()['lastName'],
-          //         jobTitle: e.payload.doc.data()['jobTitle'],
-          //         avatar: e.payload.doc.data()['avatar'],
-          //         avatarCover: e.payload.doc.data()['avatarCover'],
-          //       };
-          //     });
+          //     return {
+          //       id: e.id,
+          //       firstName: e.firstName,
+          //       lastName: e.lastName,
+          //       jobTitle: e.jobTitle,
+          //       avatar: e.avatar,
+          //       avatarCover: e.avatarCover,
+          //     };
           //   });
+          // });
+
+          this.usrs
+            .notINCard(
+              this.Requests.concat(
+                this.friendData,
+                this.SentfriendRequest,
+                this.uid
+              )
+            )
+            .subscribe((data) => {
+              console.log('1');
+
+              let flag = false;
+              data.map((e) => {
+                console.log(this.usersinCardData);
+
+                this.usersinCardData.find((s) => {
+                  if (s.id == e.payload.doc.id) {
+                    flag = true;
+                    s.id = e.payload.doc.id;
+                    s.firstName = e.payload.doc.data()['firstName'];
+                    s.lastName = e.payload.doc.data()['lastName'];
+                    s.jobTitle = e.payload.doc.data()['jobTitle'];
+                    s.avatar = e.payload.doc.data()['avatar'];
+                    s.avatarCover = e.payload.doc.data()['avatarCover'];
+                    s.doc = e.payload.doc;
+                  }
+                });
+                if (!flag)
+                  this.usersinCardData.push({
+                    id: e.payload.doc.id,
+                    firstName: e.payload.doc.data()['firstName'],
+                    lastName: e.payload.doc.data()['lastName'],
+                    jobTitle: e.payload.doc.data()['jobTitle'],
+                    avatar: e.payload.doc.data()['avatar'],
+                    avatarCover: e.payload.doc.data()['avatarCover'],
+                    doc: e.payload.doc,
+                  });
+              });
+            });
         });
       });
     });
@@ -103,19 +130,69 @@ export class NetworkSugesstionCardComponent implements OnInit {
       let e = this.dirs.first.onScroll(this.document, this.input.nativeElement);
       console.log(e);
       if (e === 'bottom') {
-        this.page.more();
+        let doc = this.usersinCardData[this.usersinCardData.length - 1].doc;
+        console.log(doc);
+
+        let sub = this.usrs
+          .notINCard(
+            this.Requests.concat(
+              this.friendData,
+              this.SentfriendRequest,
+              this.uid
+            ),
+            doc
+          )
+          .subscribe((data) => {
+            console.log('2');
+            sub.unsubscribe();
+            let flag = false;
+            data.map((e) => {
+              this.usersinCardData.find((s) => {
+                if (s.id == e.payload.doc.id) {
+                  flag = true;
+                  s.id = e.payload.doc.id;
+                  s.firstName = e.payload.doc.data()['firstName'];
+                  s.lastName = e.payload.doc.data()['lastName'];
+                  s.jobTitle = e.payload.doc.data()['jobTitle'];
+                  s.avatar = e.payload.doc.data()['avatar'];
+                  s.avatarCover = e.payload.doc.data()['avatarCover'];
+                  s.doc = e.payload.doc;
+                }
+              });
+              if (!flag)
+                this.usersinCardData.push({
+                  id: e.payload.doc.id,
+                  firstName: e.payload.doc.data()['firstName'],
+                  lastName: e.payload.doc.data()['lastName'],
+                  jobTitle: e.payload.doc.data()['jobTitle'],
+                  avatar: e.payload.doc.data()['avatar'],
+                  avatarCover: e.payload.doc.data()['avatarCover'],
+                  doc: e.payload.doc,
+                });
+            });
+          });
       }
     } catch (err) {}
   }
 
-  sendRequest(id) {
-    this.usrs.create_NewRequest(id, {
-      id: localStorage.getItem('uid'),
-      firstName: localStorage.getItem('firstName'),
-      lastName: localStorage.getItem('lastName'),
-      avatar: localStorage.getItem('avatar'),
-      avatarCover: localStorage.getItem('avatarCover'),
-      jobTitle: localStorage.getItem('jobTitle'),
-    });
+  sendRequest(user) {
+    this.usrs.create_NewRequest(
+      {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        avatarCover: user.avatarCover,
+        jobTitle: user.jobTitle,
+      },
+      {
+        id: localStorage.getItem('uid'),
+        firstName: localStorage.getItem('firstName'),
+        lastName: localStorage.getItem('lastName'),
+        avatar: localStorage.getItem('avatar'),
+        avatarCover: localStorage.getItem('avatarCover'),
+        jobTitle: localStorage.getItem('jobTitle'),
+      }
+    );
   }
 }
