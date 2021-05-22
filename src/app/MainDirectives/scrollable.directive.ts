@@ -1,34 +1,84 @@
-import { Directive, HostListener, EventEmitter, Output, ElementRef } from '@angular/core';
-
+import {
+  Directive,
+  HostListener,
+  EventEmitter,
+  Output,
+  ElementRef,
+} from '@angular/core';
 
 @Directive({
-  selector: '[Scrollable]'
+  selector: '[Scrollable]',
 })
 export class ScrollableDirective {
-  @Output() scrollPosition = new EventEmitter()
+  @Output() scrollPosition = new EventEmitter();
 
-  constructor(public el: ElementRef) { }
-  @HostListener('scroll', ['$event'])
-  onScroll(event) {
+  constructor(public el: ElementRef) {}
+
+  onScroll(document, event) {
     try {
+      // console.log(document.documentElement)
 
-      const top = event.target.scrollTop
-      const height = this.el.nativeElement.scrollHeight
-      const offset = this.el.nativeElement.offsetHeight
+      const top = document.documentElement.scrollTop;
+
+      const height = event.scrollHeight;
+
+      const offset = event.offsetHeight;
+
+      // console.log('scrollTop', top);
+
+      // console.log('scrollHeight', height);
+
+      // console.log('offsetHeight', offset);
+
+      // console.log('pageYOffset',window.pageYOffset);
 
       // emit bottom event
-      if (top > height - offset - 1) {
-        this.scrollPosition.emit('bottom')
+
+      let scrollY = window.scrollY;
+
+      let visible = document.documentElement.clientHeight;
+
+      let pageHeight = document.documentElement.scrollHeight;
+
+      let bottomOfPage = visible + scrollY === pageHeight;
+
+      let bottomOfWindow = bottomOfPage || pageHeight < visible;
+
+      if (bottomOfWindow) {
+        console.log('Bottom!');
+
+        return 'bottom';
+
+        // this.getData(); // async call
       }
 
-      // emit top event
+      // // emit top event
+
       if (top === 0) {
-        this.scrollPosition.emit('top')
+        return 'top';
       }
-
     } catch (err) {}
   }
-
 }
 
+// window.onscroll = () => {
 
+//   let scrollY = window.scrollY;
+
+//   let visible = document.documentElement.clientHeight;
+
+//   let pageHeight = document.documentElement.scrollHeight;
+
+//   let bottomOfPage = visible + scrollY === pageHeight;
+
+//   let bottomOfWindow = bottomOfPage || pageHeight < visible;
+
+//   if (bottomOfWindow) {
+
+//     console.log('Bottom!');
+
+//     // this.getData(); // async call
+
+//   }
+
+// };

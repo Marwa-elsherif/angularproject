@@ -35,7 +35,7 @@ import { ScrollableDirective } from './MainDirectives/scrollable.directive';
     LoginComponent,
     ErrorComponent,
     NotificationComponent,
-    ScrollableDirective,
+    // ScrollableDirective,
   ],
   imports: [
     BrowserModule,

@@ -12,6 +12,7 @@ import { AllSentRequestesPageComponent } from './all-sent-requestes-page/all-sen
 import { InvitationsPageComponent } from './invitations-page/invitations-page.component';
 import { FormsModule } from '@angular/forms';
 import { Ng2SearchPipeModule } from 'ng2-search-filter';
+import { ScrollableDirective } from 'src/app/MainDirectives/scrollable.directive';
 
 const networkRoutes: Routes = [
   { path: 'Network', component: NetworkPageComponent },
@@ -32,6 +33,7 @@ const networkRoutes: Routes = [
     SentRequestesCardComponent,
     AllSentRequestesPageComponent,
     InvitationsPageComponent,
+    ScrollableDirective,
   ],
   imports: [
     CommonModule,

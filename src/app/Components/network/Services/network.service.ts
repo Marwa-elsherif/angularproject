@@ -7,13 +7,27 @@ import { AngularFirestore } from '@angular/fire/firestore';
 export class NetworkService {
   constructor(private db: AngularFirestore) {}
 
-  notINCard(arr: any[], uid) {
-    arr.push(uid);
-    return this.db
-      .collection('users-details', (ref) =>
-        ref.where('__name__', 'not-in', arr)
-      )
-      .snapshotChanges();
+  notINCard(arr: any[], doc?) {
+    if (doc != undefined) {
+      return this.db
+        .collection('users-details', (ref) =>
+          ref
+            .where('__name__', 'not-in', arr)
+            .orderBy('__name__', 'asc')
+            .limit(2)
+            .startAfter(doc)
+        )
+        .snapshotChanges();
+    } else {
+      return this.db
+        .collection('users-details', (ref) =>
+          ref
+            .where('__name__', 'not-in', arr)
+            .orderBy('__name__', 'asc')
+            .limit(2)
+        )
+        .snapshotChanges();
+    }
   }
 
   notINCardRequests(arr: any[], uid) {
@@ -33,9 +47,8 @@ export class NetworkService {
       .snapshotChanges();
   }
 
-  colecpath(){
-    return this.db
-      .collection('users-details')
+  colecpath() {
+    return this.db.collection('users-details');
   }
 
   // Ignore friend Request
@@ -141,6 +154,8 @@ export class NetworkService {
 
   //create request
   create_NewRequest(user, userData) {
+    console.log('user', user);
+
     user.addedDate = new Date();
     const Request = {
       firstName: userData.firstName,
